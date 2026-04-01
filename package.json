@@ -1,0 +1,151 @@
+{
+    "name": "advanced-ai-agent",
+    "displayName": "Advanced AI Agent",
+    "description": "Multi-agent AI system with memory and autonomous reasoning",
+    "version": "1.0.0",
+    "engines": {
+        "vscode": "^1.85.0"
+    },
+    "categories": [
+        "Programming Languages",
+        "Machine Learning",
+        "Other"
+    ],
+    "activationEvents": [
+        "onStartupFinished"
+    ],
+    "main": "./out/extension.js",
+    "contributes": {
+        "commands": [
+            {
+                "command": "aiAgent.openChat",
+                "title": "AI Agent: Open Chat Panel",
+                "icon": "$(hubot)"
+            },
+            {
+                "command": "aiAgent.analyzeFile",
+                "title": "AI Agent: Deep Analyze File"
+            },
+            {
+                "command": "aiAgent.refactorCode",
+                "title": "AI Agent: Smart Refactor"
+            },
+            {
+                "command": "aiAgent.generateTests",
+                "title": "AI Agent: Generate Tests"
+            },
+            {
+                "command": "aiAgent.debugCode",
+                "title": "AI Agent: Debug & Fix"
+            },
+            {
+                "command": "aiAgent.analyzeArchitecture",
+                "title": "AI Agent: Analyze Architecture"
+            },
+            {
+                "command": "aiAgent.explainSelection",
+                "title": "AI Agent: Explain Selection"
+            },
+            {
+                "command": "aiAgent.clearMemory",
+                "title": "AI Agent: Clear Memory"
+            }
+        ],
+        "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "aiAgentContainer",
+                    "title": "AI Agent",
+                    "icon": "$(hubot)"
+                }
+            ]
+        },
+        "views": {
+            "aiAgentContainer": [
+                {
+                    "type": "webview",
+                    "id": "aiAgent.chatView",
+                    "name": "AI Chat"
+                }
+            ]
+        },
+        "menus": {
+            "editor/context": [
+                {
+                    "command": "aiAgent.explainSelection",
+                    "group": "aiAgent@1",
+                    "when": "editorHasSelection"
+                },
+                {
+                    "command": "aiAgent.refactorCode",
+                    "group": "aiAgent@2"
+                },
+                {
+                    "command": "aiAgent.generateTests",
+                    "group": "aiAgent@3"
+                },
+                {
+                    "command": "aiAgent.debugCode",
+                    "group": "aiAgent@4"
+                }
+            ]
+        },
+        "configuration": {
+            "title": "Advanced AI Agent",
+            "properties": {
+                "aiAgent.openaiApiKey": {
+                    "type": "string",
+                    "default": "",
+                    "description": "OpenAI API Key"
+                },
+                "aiAgent.anthropicApiKey": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Anthropic Claude API Key"
+                },
+                "aiAgent.primaryProvider": {
+                    "type": "string",
+                    "default": "openai",
+                    "enum": [
+                        "openai",
+                        "anthropic"
+                    ],
+                    "description": "Primary AI provider"
+                },
+                "aiAgent.model": {
+                    "type": "string",
+                    "default": "gpt-4o",
+                    "description": "Model to use"
+                },
+                "aiAgent.enableMemory": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enable persistent conversation memory"
+                },
+                "aiAgent.enableAutoScan": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Auto-scan workspace on startup"
+                },
+                "aiAgent.maxMemoryItems": {
+                    "type": "number",
+                    "default": 50,
+                    "description": "Maximum memory items to retain"
+                }
+            }
+        }
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./"
+    },
+    "devDependencies": {
+        "@types/node": "^20.0.0",
+        "@types/vscode": "^1.85.0",
+        "typescript": "^5.3.0"
+    },
+    "dependencies": {
+        "node-fetch": "^2.7.0"
+    }
+}

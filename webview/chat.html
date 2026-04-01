@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none';
+             style-src  'unsafe-inline';
+             script-src 'unsafe-inline';" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Agent Chat</title>
+    <style>
+        /*INJECT_CSS*/
+    </style>
+</head>
+
+<body>
+
+    <!-- ── Header ─────────────────────────────── -->
+    <header class="header" role="banner">
+        <div class="header-left">
+            <span class="header-icon">🤖</span>
+            <div class="header-title-group">
+                <h1 class="header-title">AI Agent</h1>
+                <span class="header-subtitle" id="agentLabel">General Agent</span>
+            </div>
+        </div>
+        <div class="header-right">
+            <button class="icon-btn" id="statsBtn" title="Agent &amp; memory stats" aria-label="Stats">
+                📊
+            </button>
+            <button class="icon-btn" id="toolsBtn" title="Available tools" aria-label="Tools">
+                🛠️
+            </button>
+            <button class="icon-btn" id="clearBtn" title="Clear chat and memory" aria-label="Clear">
+                🗑️
+            </button>
+            <button class="icon-btn" id="settingsBtn" title="Open VS Code settings" aria-label="Settings">
+                ⚙️
+            </button>
+        </div>
+    </header>
+
+    <!-- ── Agent type tabs ────────────────────── -->
+    <nav class="agent-tabs" role="tablist" aria-label="Agent types">
+        <button class="tab active" data-agent="general" role="tab" aria-selected="true">General</button>
+        <button class="tab" data-agent="analysis" role="tab" aria-selected="false">Analyze</button>
+        <button class="tab" data-agent="debugging" role="tab" aria-selected="false">Debug</button>
+        <button class="tab" data-agent="refactoring" role="tab" aria-selected="false">Refactor</button>
+        <button class="tab" data-agent="testing" role="tab" aria-selected="false">Tests</button>
+        <button class="tab" data-agent="architecture" role="tab" aria-selected="false">Architect</button>
+    </nav>
+
+    <!-- ── Messages container ─────────────────── -->
+    <main class="messages" id="messages" role="log" aria-live="polite" aria-label="Chat messages">
+
+        <!-- Welcome card injected by JS on load -->
+        <div id="welcomeCard" class="welcome-card">
+            <div class="welcome-icon">🤖</div>
+            <h2 class="welcome-title">Advanced AI Agent</h2>
+            <p class="welcome-sub">
+                Multi-agent system with persistent memory and chain-of-thought reasoning.
+            </p>
+            <ul class="welcome-features">
+                <li><span class="feat-badge badge-analysis">Analyze</span>
+                    Deep code review — quality, security, performance</li>
+                <li><span class="feat-badge badge-debugging">Debug</span>
+                    Multi-step bug detection with ReAct reasoning</li>
+                <li><span class="feat-badge badge-refactoring">Refactor</span>
+                    Intelligent restructuring with strategy planning</li>
+                <li><span class="feat-badge badge-testing">Tests</span>
+                    Unit · integration · edge-case suites</li>
+                <li><span class="feat-badge badge-architecture">Architect</span>
+                    System design · patterns · migration paths</li>
+            </ul>
+            <p class="welcome-hint">
+                Select a tab above to target a specialist, or just type anything — the
+                agent auto-routes your request.
+            </p>
+        </div>
+
+    </main>
+
+    <!-- ── Stats overlay ──────────────────────── -->
+    <aside class="overlay" id="statsOverlay" hidden aria-modal="true" role="dialog">
+        <div class="overlay-card">
+            <div class="overlay-header">
+                <h2>📊 Stats</h2>
+                <button class="icon-btn close-overlay" data-target="statsOverlay">✕</button>
+            </div>
+            <div class="overlay-body" id="statsBody">Loading…</div>
+        </div>
+    </aside>
+
+    <!-- ── Tools overlay ──────────────────────── -->
+    <aside class="overlay" id="toolsOverlay" hidden aria-modal="true" role="dialog">
+        <div class="overlay-card">
+            <div class="overlay-header">
+                <h2>🛠️ Available Tools</h2>
+                <button class="icon-btn close-overlay" data-target="toolsOverlay">✕</button>
+            </div>
+            <div class="overlay-body" id="toolsBody">
+                <p class="overlay-hint">Run a tool directly from the chat:</p>
+                <div class="tool-grid" id="toolGrid">
+                    <!-- populated by JS -->
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ── Confirm dialog ─────────────────────── -->
+    <div class="confirm-backdrop" id="confirmBackdrop" hidden>
+        <div class="confirm-dialog" role="alertdialog" aria-modal="true">
+            <p class="confirm-msg" id="confirmMsg">Are you sure?</p>
+            <div class="confirm-actions">
+                <button class="btn btn-primary" id="confirmYes">Confirm</button>
+                <button class="btn btn-secondary" id="confirmNo">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Input area ─────────────────────────── -->
+    <footer class="input-area" role="contentinfo">
+
+        <!-- Suggestion chips (shown when agent returns suggestions) -->
+        <div class="chips" id="chips" hidden></div>
+
+        <div class="input-row">
+            <div class="input-wrapper">
+                <textarea id="messageInput" class="message-input"
+                    placeholder="Ask anything about your code… (Enter to send, Shift+Enter for new line)" rows="1"
+                    aria-label="Chat input" aria-multiline="true" spellcheck="true"></textarea>
+                <div class="input-actions">
+                    <button class="input-action-btn" id="attachBtn" title="Use active editor code">
+                        📎
+                    </button>
+                </div>
+            </div>
+            <button class="send-btn" id="sendBtn" title="Send message (Enter)" aria-label="Send">
+                <span class="send-icon">↑</span>
+            </button>
+        </div>
+
+        <div class="input-footer">
+            <span class="input-hint" id="inputHint">
+                Agent auto-selects the best specialist · Persistent memory enabled
+            </span>
+            <span class="char-count" id="charCount"></span>
+        </div>
+
+    </footer>
+
+    <script>
+        /*INJECT_JS*/
+    </script>
+</body>
+
+</html>
