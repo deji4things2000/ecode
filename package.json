@@ -1,151 +1,514 @@
 {
-    "name": "advanced-ai-agent",
-    "displayName": "Advanced AI Agent",
-    "description": "Multi-agent AI system with memory and autonomous reasoning",
-    "version": "1.0.0",
-    "engines": {
-        "vscode": "^1.85.0"
-    },
-    "categories": [
-        "Programming Languages",
-        "Machine Learning",
-        "Other"
+  "name": "advanced-ai-agent",
+  "displayName": "Advanced AI Agent",
+  "description": "Multi-agent AI system with persistent memory, chain-of-thought reasoning, and 6 open-source provider integrations",
+  "version": "1.0.0",
+  "publisher": "your-publisher-name",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/advanced-ai-agent"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/advanced-ai-agent/issues"
+  },
+  "homepage": "https://github.com/your-username/advanced-ai-agent#readme",
+  "engines": {
+    "vscode": "^1.85.0",
+    "node":   ">=18.0.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Machine Learning",
+    "Other"
+  ],
+  "keywords": [
+    "ai",
+    "agent",
+    "copilot",
+    "ollama",
+    "cline",
+    "aider",
+    "cortex",
+    "llm",
+    "gpt",
+    "claude",
+    "refactor",
+    "debug",
+    "testing",
+    "chat"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+
+  "contributes": {
+
+    "commands": [
+      {
+        "command": "aiAgent.openChat",
+        "title":   "AI Agent: Open Chat Panel",
+        "icon":    "$(hubot)",
+        "category": "AI Agent"
+      },
+      {
+        "command":  "aiAgent.analyzeFile",
+        "title":    "AI Agent: Deep Analyze File",
+        "category": "AI Agent"
+      },
+      {
+        "command":  "aiAgent.refactorCode",
+        "title":    "AI Agent: Smart Refactor",
+        "category": "AI Agent"
+      },
+      {
+        "command":  "aiAgent.generateTests",
+        "title":    "AI Agent: Generate Tests",
+        "category": "AI Agent"
+      },
+      {
+        "command":  "aiAgent.debugCode",
+        "title":    "AI Agent: Debug & Fix",
+        "category": "AI Agent"
+      },
+      {
+        "command":  "aiAgent.analyzeArchitecture",
+        "title":    "AI Agent: Analyze Architecture",
+        "category": "AI Agent"
+      },
+      {
+        "command":  "aiAgent.explainSelection",
+        "title":    "AI Agent: Explain Selection",
+        "category": "AI Agent"
+      },
+      {
+        "command":  "aiAgent.clearMemory",
+        "title":    "AI Agent: Clear Memory",
+        "category": "AI Agent"
+      },
+      {
+        "command":  "aiAgent.selectProvider",
+        "title":    "AI Agent: Switch Provider",
+        "icon":     "$(server)",
+        "category": "AI Agent"
+      },
+      {
+        "command":  "aiAgent.selectModel",
+        "title":    "AI Agent: Switch Model",
+        "icon":     "$(symbol-class)",
+        "category": "AI Agent"
+      }
     ],
-    "activationEvents": [
-        "onStartupFinished"
-    ],
-    "main": "./out/extension.js",
-    "contributes": {
-        "commands": [
-            {
-                "command": "aiAgent.openChat",
-                "title": "AI Agent: Open Chat Panel",
-                "icon": "$(hubot)"
-            },
-            {
-                "command": "aiAgent.analyzeFile",
-                "title": "AI Agent: Deep Analyze File"
-            },
-            {
-                "command": "aiAgent.refactorCode",
-                "title": "AI Agent: Smart Refactor"
-            },
-            {
-                "command": "aiAgent.generateTests",
-                "title": "AI Agent: Generate Tests"
-            },
-            {
-                "command": "aiAgent.debugCode",
-                "title": "AI Agent: Debug & Fix"
-            },
-            {
-                "command": "aiAgent.analyzeArchitecture",
-                "title": "AI Agent: Analyze Architecture"
-            },
-            {
-                "command": "aiAgent.explainSelection",
-                "title": "AI Agent: Explain Selection"
-            },
-            {
-                "command": "aiAgent.clearMemory",
-                "title": "AI Agent: Clear Memory"
-            }
-        ],
-        "viewsContainers": {
-            "activitybar": [
-                {
-                    "id": "aiAgentContainer",
-                    "title": "AI Agent",
-                    "icon": "$(hubot)"
-                }
-            ]
-        },
-        "views": {
-            "aiAgentContainer": [
-                {
-                    "type": "webview",
-                    "id": "aiAgent.chatView",
-                    "name": "AI Chat"
-                }
-            ]
-        },
-        "menus": {
-            "editor/context": [
-                {
-                    "command": "aiAgent.explainSelection",
-                    "group": "aiAgent@1",
-                    "when": "editorHasSelection"
-                },
-                {
-                    "command": "aiAgent.refactorCode",
-                    "group": "aiAgent@2"
-                },
-                {
-                    "command": "aiAgent.generateTests",
-                    "group": "aiAgent@3"
-                },
-                {
-                    "command": "aiAgent.debugCode",
-                    "group": "aiAgent@4"
-                }
-            ]
-        },
-        "configuration": {
-            "title": "Advanced AI Agent",
-            "properties": {
-                "aiAgent.openaiApiKey": {
-                    "type": "string",
-                    "default": "",
-                    "description": "OpenAI API Key"
-                },
-                "aiAgent.anthropicApiKey": {
-                    "type": "string",
-                    "default": "",
-                    "description": "Anthropic Claude API Key"
-                },
-                "aiAgent.primaryProvider": {
-                    "type": "string",
-                    "default": "openai",
-                    "enum": [
-                        "openai",
-                        "anthropic"
-                    ],
-                    "description": "Primary AI provider"
-                },
-                "aiAgent.model": {
-                    "type": "string",
-                    "default": "gpt-4o",
-                    "description": "Model to use"
-                },
-                "aiAgent.enableMemory": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "Enable persistent conversation memory"
-                },
-                "aiAgent.enableAutoScan": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "Auto-scan workspace on startup"
-                },
-                "aiAgent.maxMemoryItems": {
-                    "type": "number",
-                    "default": 50,
-                    "description": "Maximum memory items to retain"
-                }
-            }
+
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id":    "aiAgentContainer",
+          "title": "AI Agent",
+          "icon":  "$(hubot)"
         }
+      ]
     },
-    "scripts": {
-        "vscode:prepublish": "npm run compile",
-        "compile": "tsc -p ./",
-        "watch": "tsc -watch -p ./"
+
+    "views": {
+      "aiAgentContainer": [
+        {
+          "type": "webview",
+          "id":   "aiAgent.chatView",
+          "name": "AI Chat"
+        },
+        {
+          "type": "webview",
+          "id":   "aiAgent.providerView",
+          "name": "Providers"
+        }
+      ]
     },
-    "devDependencies": {
-        "@types/node": "^20.0.0",
-        "@types/vscode": "^1.85.0",
-        "typescript": "^5.3.0"
+
+    "menus": {
+      "editor/context": [
+        {
+          "command": "aiAgent.explainSelection",
+          "group":   "aiAgent@1",
+          "when":    "editorHasSelection"
+        },
+        {
+          "command": "aiAgent.refactorCode",
+          "group":   "aiAgent@2"
+        },
+        {
+          "command": "aiAgent.generateTests",
+          "group":   "aiAgent@3"
+        },
+        {
+          "command": "aiAgent.debugCode",
+          "group":   "aiAgent@4"
+        },
+        {
+          "command": "aiAgent.analyzeFile",
+          "group":   "aiAgent@5"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "aiAgent.openChat",
+          "group":   "navigation",
+          "when":    "editorIsOpen"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "aiAgent.openChat"
+        },
+        {
+          "command": "aiAgent.analyzeFile",
+          "when":    "editorIsOpen"
+        },
+        {
+          "command": "aiAgent.refactorCode",
+          "when":    "editorIsOpen"
+        },
+        {
+          "command": "aiAgent.generateTests",
+          "when":    "editorIsOpen"
+        },
+        {
+          "command": "aiAgent.debugCode",
+          "when":    "editorIsOpen"
+        },
+        {
+          "command": "aiAgent.analyzeArchitecture"
+        },
+        {
+          "command": "aiAgent.explainSelection",
+          "when":    "editorHasSelection"
+        },
+        {
+          "command": "aiAgent.clearMemory"
+        },
+        {
+          "command": "aiAgent.selectProvider"
+        },
+        {
+          "command": "aiAgent.selectModel"
+        }
+      ]
     },
-    "dependencies": {
-        "node-fetch": "^2.7.0"
+
+    "keybindings": [
+      {
+        "command": "aiAgent.openChat",
+        "key":     "ctrl+shift+a",
+        "mac":     "cmd+shift+a",
+        "when":    "editorFocus"
+      },
+      {
+        "command": "aiAgent.debugCode",
+        "key":     "ctrl+shift+d",
+        "mac":     "cmd+shift+d",
+        "when":    "editorFocus"
+      },
+      {
+        "command": "aiAgent.generateTests",
+        "key":     "ctrl+shift+t",
+        "mac":     "cmd+shift+t",
+        "when":    "editorFocus"
+      },
+      {
+        "command": "aiAgent.refactorCode",
+        "key":     "ctrl+shift+r",
+        "mac":     "cmd+shift+r",
+        "when":    "editorFocus"
+      },
+      {
+        "command": "aiAgent.explainSelection",
+        "key":     "ctrl+shift+e",
+        "mac":     "cmd+shift+e",
+        "when":    "editorHasSelection"
+      },
+      {
+        "command": "aiAgent.selectProvider",
+        "key":     "ctrl+shift+p",
+        "mac":     "cmd+shift+p",
+        "when":    "aiAgent.active"
+      }
+    ],
+
+    "configuration": {
+      "title": "Advanced AI Agent",
+      "properties": {
+
+        "aiAgent.primaryProvider": {
+          "type":        "string",
+          "default":     "mock",
+          "enum": [
+            "openai",
+            "anthropic",
+            "ollama",
+            "cline",
+            "aider",
+            "cortex",
+            "localllm",
+            "mock"
+          ],
+          "enumDescriptions": [
+            "OpenAI — GPT-4o, GPT-4, GPT-3.5-Turbo (requires API key)",
+            "Anthropic — Claude 3.5 Sonnet, Claude 3 Opus (requires API key)",
+            "Ollama — run LLMs locally, no API key required",
+            "Cline — most popular open-source agent with MCP tool support",
+            "Aider — git-integrated AI coding with cost optimization",
+            "CortexIDE — privacy-first local LLM, Cursor alternative",
+            "Local LLM — LM Studio, llama.cpp, Jan, or any OpenAI-compatible server",
+            "Demo Mode — mock responses, no setup required"
+          ],
+          "description": "Primary AI provider. Switch anytime via Ctrl+Shift+P → AI Agent: Switch Provider"
+        },
+
+        "aiAgent.model": {
+          "type":        "string",
+          "default":     "gpt-4o",
+          "description": "Model name for OpenAI or Anthropic (e.g. gpt-4o, claude-3-5-sonnet-20241022)"
+        },
+
+        "aiAgent.enableMemory": {
+          "type":        "boolean",
+          "default":     true,
+          "description": "Persist conversation and analysis memory across VS Code sessions"
+        },
+
+        "aiAgent.enableAutoScan": {
+          "type":        "boolean",
+          "default":     true,
+          "description": "Automatically scan the workspace on startup to build project context"
+        },
+
+        "aiAgent.maxMemoryItems": {
+          "type":        "number",
+          "default":     50,
+          "minimum":     10,
+          "maximum":     500,
+          "description": "Maximum number of memory items to retain before evicting the lowest-importance entries"
+        },
+
+        "aiAgent.openaiApiKey": {
+          "type":        "string",
+          "default":     "",
+          "description": "OpenAI API key — get one at https://platform.openai.com/api-keys",
+          "markdownDescription": "OpenAI API key. Get one at [platform.openai.com/api-keys](https://platform.openai.com/api-keys)"
+        },
+
+        "aiAgent.anthropicApiKey": {
+          "type":        "string",
+          "default":     "",
+          "description": "Anthropic Claude API key — get one at https://console.anthropic.com",
+          "markdownDescription": "Anthropic API key. Get one at [console.anthropic.com](https://console.anthropic.com)"
+        },
+
+        "aiAgent.ollama.baseUrl": {
+          "type":        "string",
+          "default":     "http://localhost:11434",
+          "description": "Ollama server URL. Start Ollama with: ollama serve",
+          "markdownDescription": "Ollama server URL. Install from [ollama.com](https://ollama.com) then run `ollama serve`"
+        },
+
+        "aiAgent.ollama.model": {
+          "type":        "string",
+          "default":     "llama3.2",
+          "enum": [
+            "llama3.2",
+            "llama3.1",
+            "codellama",
+            "deepseek-coder",
+            "deepseek-coder-v2",
+            "qwen2.5-coder",
+            "mistral",
+            "mixtral",
+            "phi3",
+            "gemma2",
+            "starcoder2"
+          ],
+          "description": "Ollama model to use. Run 'ollama pull <model>' to download"
+        },
+
+        "aiAgent.ollama.contextWindow": {
+          "type":        "number",
+          "default":     4096,
+          "minimum":     512,
+          "maximum":     131072,
+          "description": "Ollama context window size in tokens"
+        },
+
+        "aiAgent.ollama.keepAlive": {
+          "type":        "string",
+          "default":     "5m",
+          "description": "How long to keep the Ollama model loaded in memory (e.g. '5m', '1h', '-1' for forever)"
+        },
+
+        "aiAgent.cline.delegateProvider": {
+          "type":        "string",
+          "default":     "openai",
+          "enum":        ["openai", "anthropic", "ollama", "localllm"],
+          "description": "AI provider Cline delegates completions to"
+        },
+
+        "aiAgent.cline.useExtension": {
+          "type":        "boolean",
+          "default":     true,
+          "description": "Use the Cline VS Code extension API when it is installed (saoudrizwan.claude-dev)"
+        },
+
+        "aiAgent.cline.mcpServers": {
+          "type":        "object",
+          "default":     {},
+          "description": "MCP (Model Context Protocol) server endpoints as { \"name\": \"http://url\" }",
+          "markdownDescription": "MCP server map. Example:\n```json\n{\n  \"filesystem\": \"http://localhost:3000\",\n  \"github\": \"http://localhost:3001\"\n}\n```"
+        },
+
+        "aiAgent.aider.path": {
+          "type":        "string",
+          "default":     "aider",
+          "description": "Path to the aider executable. Install with: pip install aider-chat",
+          "markdownDescription": "Path to `aider`. Install with `pip install aider-chat` — see [aider.chat](https://aider.chat)"
+        },
+
+        "aiAgent.aider.autoCommits": {
+          "type":        "boolean",
+          "default":     true,
+          "description": "Allow Aider to automatically commit changes to git"
+        },
+
+        "aiAgent.aider.showCost": {
+          "type":        "boolean",
+          "default":     true,
+          "description": "Show estimated API cost before each Aider operation"
+        },
+
+        "aiAgent.aider.delegateProvider": {
+          "type":        "string",
+          "default":     "openai",
+          "enum":        ["openai", "anthropic", "ollama", "localllm"],
+          "description": "AI provider Aider uses for chat completions"
+        },
+
+        "aiAgent.aider.extraFlags": {
+          "type":        "array",
+          "items":       { "type": "string" },
+          "default":     [],
+          "description": "Extra command-line flags passed to the aider executable (e.g. [\"--no-auto-commits\", \"--dark-mode\"])"
+        },
+
+        "aiAgent.cortex.baseUrl": {
+          "type":        "string",
+          "default":     "http://localhost:39281",
+          "description": "CortexIDE server URL. Start with: cortex start",
+          "markdownDescription": "CortexIDE server URL. Install from [cortex.so](https://cortex.so) then run `cortex start`"
+        },
+
+        "aiAgent.cortex.model": {
+          "type":        "string",
+          "default":     "cortexso/llama3.2",
+          "enum": [
+            "cortexso/llama3.2",
+            "cortexso/codestral",
+            "cortexso/mistral",
+            "cortexso/deepseek-coder-v2",
+            "cortexso/phi-3.5",
+            "cortexso/gemma2"
+          ],
+          "description": "Cortex model ID. Run 'cortex pull <model>' to download"
+        },
+
+        "aiAgent.localllm.backend": {
+          "type":    "string",
+          "default": "lmstudio",
+          "enum": [
+            "lmstudio",
+            "llamacpp",
+            "jan",
+            "textgen",
+            "custom"
+          ],
+          "enumDescriptions": [
+            "LM Studio — http://localhost:1234 (https://lmstudio.ai)",
+            "llama.cpp server — http://localhost:8080 (https://github.com/ggerganov/llama.cpp)",
+            "Jan — http://localhost:1337 (https://jan.ai)",
+            "text-generation-webui — http://localhost:5000",
+            "Custom OpenAI-compatible server (set baseUrl manually)"
+          ],
+          "description": "Local LLM backend server type"
+        },
+
+        "aiAgent.localllm.baseUrl": {
+          "type":        "string",
+          "default":     "",
+          "description": "Override the local LLM server URL (leave blank to use backend default)"
+        },
+
+        "aiAgent.localllm.model": {
+          "type":        "string",
+          "default":     "local-model",
+          "description": "Model name or path as recognised by your local LLM server"
+        },
+
+        "aiAgent.localllm.contextSize": {
+          "type":        "number",
+          "default":     4096,
+          "minimum":     512,
+          "maximum":     131072,
+          "description": "Context window size in tokens for the local LLM"
+        },
+
+        "aiAgent.localllm.apiKey": {
+          "type":        "string",
+          "default":     "local",
+          "description": "API key for the local LLM server (most servers accept any non-empty string)"
+        },
+
+        "aiAgent.diagnostics.enabled": {
+          "type":        "boolean",
+          "default":     true,
+          "description": "Enable AI-powered inline diagnostics (squiggles in the editor)"
+        },
+
+        "aiAgent.diagnostics.debounceMs": {
+          "type":        "number",
+          "default":     2500,
+          "minimum":     500,
+          "maximum":     30000,
+          "description": "Milliseconds to wait after the last keystroke before running an AI diagnostic scan"
+        },
+
+        "aiAgent.diagnostics.maxFileChars": {
+          "type":        "number",
+          "default":     15000,
+          "minimum":     1000,
+          "maximum":     100000,
+          "description": "Maximum file size in characters to scan for diagnostics"
+        }
+
+      }
     }
+  },
+
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile":           "tsc -p ./",
+    "watch":             "tsc -watch -p ./",
+    "lint":              "eslint src --ext .ts",
+    "package":           "vsce package",
+    "publish":           "vsce publish"
+  },
+
+  "devDependencies": {
+    "@types/node":        "^20.0.0",
+    "@types/node-fetch":  "^2.6.11",
+    "@types/vscode":      "^1.85.0",
+    "typescript":         "^5.3.0",
+    "@vscode/vsce":       "^2.24.0"
+  },
+
+  "dependencies": {
+    "node-fetch": "^2.7.0"
+  }
 }

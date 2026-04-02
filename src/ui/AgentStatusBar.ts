@@ -23,6 +23,8 @@ export class AgentStatusBar {
     // Primary item (always visible, right-aligned)
     private readonly primary: vscode.StatusBarItem;
 
+    private providerLabel = '🤖 AI Agent';
+
     // Secondary item shows diagnostic counts
     private readonly diagnosticItem: vscode.StatusBarItem;
 
@@ -138,28 +140,40 @@ export class AgentStatusBar {
         this.renderIdle();
     }
 
+    // Add inside the AgentStatusBar class, after the existing setIdle() method
+
+    /** Update the provider name shown in the idle status bar label */
+    setProviderLabel(label: string): void {
+    this.providerLabel = label;
+    // Re-render idle state with the new label if we are currently idle
+    if (this.currentState === 'idle') {
+        this.renderIdle();
+    }
+    }
+
     // ── Rendering ─────────────────────────────────
 
+    // Replace the existing renderIdle() method with this version
+
     private renderIdle(): void {
-        const stats = this.memory.getStats();
-        const counts = this.diagnostics.getTotalDiagnosticCount();
+    const stats  = this.memory.getStats();
+    const counts = this.diagnostics.getTotalDiagnosticCount();
 
-        // Build tooltip with memory info
-        const tooltipLines = [
-            '🤖 Advanced AI Agent',
-            '─────────────────────',
-            `Memories:       ${stats.totalMemories}`,
-            `Conv. turns:    ${stats.conversationTurns}`,
-            `Code analyses:  ${stats.byType.codeAnalysis}`,
-            `Project ctx:    ${stats.byType.projectContext}`,
-            '',
-            'Click to open AI chat',
-        ];
+    const tooltipLines = [
+        this.providerLabel,
+        '─────────────────────',
+        `Memories:       ${stats.totalMemories}`,
+        `Conv. turns:    ${stats.conversationTurns}`,
+        `Code analyses:  ${stats.byType.codeAnalysis}`,
+        `Project ctx:    ${stats.byType.projectContext}`,
+        '',
+        'Click to open AI chat',
+    ];
 
-        this.primary.text = '$(hubot) AI Agent';
-        this.primary.tooltip = tooltipLines.join('\n');
-        this.primary.color = undefined;
-        this.primary.backgroundColor = undefined;
+    this.primary.text    = `$(hubot) ${this.providerLabel}`;
+    this.primary.tooltip = tooltipLines.join('\n');
+    this.primary.color   = undefined;
+    this.primary.backgroundColor = undefined;
     }
 
     private refreshDiagnosticBadge(): void {
