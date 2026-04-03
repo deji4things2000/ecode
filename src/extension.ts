@@ -27,19 +27,32 @@ export async function activate(
   const scanner = new WorkspaceScanner(memory);
 
   // ── Provider registry ─────────────────────────
-  // Start with mock so the extension always activates even with
-  // no API key or local server.  restoreProvider() will switch to
-  // whatever the user last selected.
-  const providerRegistry = new ProviderRegistry(context, {} as any, 'mock');
+  // Start with mock for reliability. Try to restore user's last choice,
+  // but silently fall back to mock if unavailable.
+  const mockProvider: any = {
+    name: 'mock',
+    async complete(req: any) {
+      await new Promise(r => setTimeout(r, 500));
+      return { content: 'Demo mode enabled. Add a provider to get real responses.', model: 'mock-v1' };
+    },
+    async ask(prompt: string) {
+      return 'Demo mode. Switch a provider in settings.';
+    },
+  };
+  const providerRegistry = new ProviderRegistry(context, mockProvider, 'mock');
   await providerRegistry.restoreProvider();
 
   // If nothing was persisted, try to build from the settings key
   if (providerRegistry.getProviderID() === 'mock') {
     const configuredID =
       (config.get<string>('primaryProvider') ?? 'mock') as any;
-    await providerRegistry.switchProvider(configuredID).catch(() => {
-      // silently stay on mock if the configured provider fails
-    });
+    if (configuredID !== 'mock') {
+      try {
+        await providerRegistry.switchProvider(configuredID);
+      } catch (err) {
+        console.log(`[AI Agent] Provider ${configuredID} unavailable, using mock.`);
+      }
+    }
   }
 
   // ── Orchestrator ──────────────────────────────
@@ -295,17 +308,15 @@ export async function activate(
   // ─────────────────────────────────────────────
 
   const meta = providerRegistry.getMeta();
+  console.log(`Advanced AI Agent ready — ${meta.icon} ${meta.displayName}`);
 
+  // Automatically open chat panel on first activation
   vscode.window.showInformationMessage(
-    `${meta.icon} AI Agent ready — ${meta.displayName}`,
-    'Switch Provider',
+    `${meta.icon} AI Agent is ready!`,
     'Open Chat'
   ).then(btn => {
-    if (btn === 'Switch Provider') { quickPick.show(); }
-    if (btn === 'Open Chat')       { ChatPanel.create(orchestrator, memory, providerRegistry, context); }
+    if (btn === 'Open Chat') { ChatPanel.create(orchestrator, memory, providerRegistry, context); }
   });
-
-  console.log('Advanced AI Agent is active.');
 }
 
 // ─────────────────────────────────────────────

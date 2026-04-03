@@ -25,13 +25,13 @@
         </div>
     </div>
     <div class="header-right">
-        <!-- Provider badge / switcher button -->
+        <!-- Provider selector button -->
         <button
         class="provider-badge"
         id="providerBtn"
-        title="Switch AI provider"
+        title="Click to switch AI provider"
         aria-label="Switch Provider">
-        🎮 Demo
+        📍 Provider
         </button>
         <button class="icon-btn" id="statsBtn"
         title="Agent &amp; memory stats" aria-label="Stats">📊</button>
@@ -44,42 +44,17 @@
     </div>
     </header>
 
-    <!-- ── Agent type tabs ────────────────────── -->
-    <nav class="agent-tabs" role="tablist" aria-label="Agent types">
-        <button class="tab active" data-agent="general" role="tab" aria-selected="true">General</button>
-        <button class="tab" data-agent="analysis" role="tab" aria-selected="false">Analyze</button>
-        <button class="tab" data-agent="debugging" role="tab" aria-selected="false">Debug</button>
-        <button class="tab" data-agent="refactoring" role="tab" aria-selected="false">Refactor</button>
-        <button class="tab" data-agent="testing" role="tab" aria-selected="false">Tests</button>
-        <button class="tab" data-agent="architecture" role="tab" aria-selected="false">Architect</button>
-    </nav>
+    <!-- Agent type auto-routing (user mentions needs in chat) -->
 
     <!-- ── Messages container ─────────────────── -->
     <main class="messages" id="messages" role="log" aria-live="polite" aria-label="Chat messages">
 
-        <!-- Welcome card injected by JS on load -->
-        <div id="welcomeCard" class="welcome-card">
+        <!-- Welcome card (hidden by default, shown if empty chat) -->
+        <div id="welcomeCard" class="welcome-card" style="display: none;">
             <div class="welcome-icon">🤖</div>
-            <h2 class="welcome-title">Advanced AI Agent</h2>
-            <p class="welcome-sub">
-                Multi-agent system with persistent memory and chain-of-thought reasoning.
-            </p>
-            <ul class="welcome-features">
-                <li><span class="feat-badge badge-analysis">Analyze</span>
-                    Deep code review — quality, security, performance</li>
-                <li><span class="feat-badge badge-debugging">Debug</span>
-                    Multi-step bug detection with ReAct reasoning</li>
-                <li><span class="feat-badge badge-refactoring">Refactor</span>
-                    Intelligent restructuring with strategy planning</li>
-                <li><span class="feat-badge badge-testing">Tests</span>
-                    Unit · integration · edge-case suites</li>
-                <li><span class="feat-badge badge-architecture">Architect</span>
-                    System design · patterns · migration paths</li>
-            </ul>
-            <p class="welcome-hint">
-                Select a tab above to target a specialist, or just type anything — the
-                agent auto-routes your request.
-            </p>
+            <h2 class="welcome-title">AI Agent Ready</h2>
+            <p class="welcome-sub">Start typing to analyze, debug, refactor, test, or architect your code.</p>
+            <p class="welcome-hint">Mention what you need — "analyze this", "generate tests", "debug the bug", etc.</p>
         </div>
 
     </main>

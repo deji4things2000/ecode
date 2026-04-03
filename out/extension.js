@@ -56,17 +56,31 @@ async function activate(context) {
     const memory = new AgentMemory_1.AgentMemory(context, config.get('maxMemoryItems') ?? 50);
     const scanner = new WorkspaceScanner_1.WorkspaceScanner(memory);
     // ── Provider registry ─────────────────────────
-    // Start with mock so the extension always activates even with
-    // no API key or local server.  restoreProvider() will switch to
-    // whatever the user last selected.
-    const providerRegistry = new ProviderRegistry_1.ProviderRegistry(context, {}, 'mock');
+    // Start with mock for reliability. Try to restore user's last choice,
+    // but silently fall back to mock if unavailable.
+    const mockProvider = {
+        name: 'mock',
+        async complete(req) {
+            await new Promise(r => setTimeout(r, 500));
+            return { content: 'Demo mode enabled. Add a provider to get real responses.', model: 'mock-v1' };
+        },
+        async ask(prompt) {
+            return 'Demo mode. Switch a provider in settings.';
+        },
+    };
+    const providerRegistry = new ProviderRegistry_1.ProviderRegistry(context, mockProvider, 'mock');
     await providerRegistry.restoreProvider();
     // If nothing was persisted, try to build from the settings key
     if (providerRegistry.getProviderID() === 'mock') {
         const configuredID = (config.get('primaryProvider') ?? 'mock');
-        await providerRegistry.switchProvider(configuredID).catch(() => {
-            // silently stay on mock if the configured provider fails
-        });
+        if (configuredID !== 'mock') {
+            try {
+                await providerRegistry.switchProvider(configuredID);
+            }
+            catch (err) {
+                console.log(`[AI Agent] Provider ${configuredID} unavailable, using mock.`);
+            }
+        }
     }
     // ── Orchestrator ──────────────────────────────
     const orchestrator = new AgentOrchestrator_1.AgentOrchestrator(providerRegistry.getProvider(), memory, context);
@@ -266,15 +280,13 @@ async function activate(context) {
     //  Ready notification
     // ─────────────────────────────────────────────
     const meta = providerRegistry.getMeta();
-    vscode.window.showInformationMessage(`${meta.icon} AI Agent ready — ${meta.displayName}`, 'Switch Provider', 'Open Chat').then(btn => {
-        if (btn === 'Switch Provider') {
-            quickPick.show();
-        }
+    console.log(`Advanced AI Agent ready — ${meta.icon} ${meta.displayName}`);
+    // Automatically open chat panel on first activation
+    vscode.window.showInformationMessage(`${meta.icon} AI Agent is ready!`, 'Open Chat').then(btn => {
         if (btn === 'Open Chat') {
             ChatPanel_1.ChatPanel.create(orchestrator, memory, providerRegistry, context);
         }
     });
-    console.log('Advanced AI Agent is active.');
 }
 // ─────────────────────────────────────────────
 //  Deactivation

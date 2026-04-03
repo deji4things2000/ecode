@@ -30,7 +30,6 @@
   const confirmNo    = document.getElementById('confirmNo');
 
   // ── State ────────────────────────────────────
-  let activeAgent    = 'general';
   let thinkingEl     = null;
   let isSending      = false;
   let confirmResolve = null;
@@ -191,24 +190,7 @@
       });
     }
 
-    // ── Agent tabs ─────────────────────────────
-    document.querySelectorAll('.tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('.tab').forEach(t => {
-          t.classList.remove('active');
-          t.setAttribute('aria-selected', 'false');
-        });
-        tab.classList.add('active');
-        tab.setAttribute('aria-selected', 'true');
-        activeAgent = tab.dataset.agent;
-
-        if (agentLabel) {
-          agentLabel.textContent = AGENT_LABELS[activeAgent] ?? 'Agent';
-        }
-        inputEl.placeholder = agentHint(activeAgent);
-        inputEl.focus();
-      });
-    });
+    // ── No agent tabs — auto-routing on backend ──
 
     // ── Overlay close buttons ──────────────────
     document.querySelectorAll('.close-overlay').forEach(btn => {
@@ -257,15 +239,11 @@
       welcomeCard.remove();
     }
 
-    // Prepend agent directive when a specialist tab is active
-    const fullText = activeAgent !== 'general'
-      ? `[${activeAgent}] ${text}`
-      : text;
-
+    // Backend handles auto-routing based on keywords
     appendUserMessage(text);
     clearChips();
 
-    vscode.postMessage({ command: 'sendMessage', text: fullText });
+    vscode.postMessage({ command: 'sendMessage', text });
 
     inputEl.value = '';
     autoResizeTextarea();
@@ -493,8 +471,7 @@
 
     const label = document.createElement('div');
     label.className   = 'thinking-label';
-    label.textContent =
-      `${AGENT_LABELS[activeAgent] ?? 'Agent'} is reasoning…`;
+    label.textContent = 'AI Agent is reasoning…';
 
     const bubble = document.createElement('div');
     bubble.className = 'thinking-bubble';

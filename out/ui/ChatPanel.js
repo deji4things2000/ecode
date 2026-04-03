@@ -117,6 +117,8 @@ class ChatPanel {
         try {
             const editor = vscode.window.activeTextEditor;
             const editorCtx = editor ? this.buildEditorContext(editor) : undefined;
+            const providerID = this.providerRegistry.getProviderID();
+            const providerMeta = this.providerRegistry.getMeta(providerID);
             const result = await this.orchestrator.chat(text, editorCtx);
             this.postToWebview({
                 command: 'receiveMessage',
@@ -133,11 +135,18 @@ class ChatPanel {
             });
         }
         catch (error) {
+            const providerID = this.providerRegistry.getProviderID();
+            const providerMeta = this.providerRegistry.getMeta(providerID);
+            let errorMsg = error.message || 'Unknown error';
+            // Provide actionable errors
+            if (errorMsg.includes('ECONNREFUSED') || errorMsg.includes('http') || errorMsg.includes('localhost')) {
+                errorMsg = `Provider "${providerMeta.displayName}" is not running or unreachable.\n\n**Try:** Click 📍 Provider → switch to a different provider or start the service.`;
+            }
             this.postToWebview({
                 command: 'receiveMessage',
                 message: {
                     role: 'assistant',
-                    content: `⚠️ **Error:** ${error.message}`,
+                    content: `⚠️ **Error:** ${errorMsg}`,
                     agentUsed: 'general',
                     timestamp: Date.now(),
                     isError: true,
