@@ -44,6 +44,7 @@ const DiagnosticsManager_1 = require("./ui/DiagnosticsManager");
 const AgentStatusBar_1 = require("./ui/AgentStatusBar");
 const ProviderRegistry_1 = require("./providers/ProviderRegistry");
 const ProviderQuickPick_1 = require("./ui/ProviderQuickPick");
+const ProviderSelectorPanel_1 = require("./ui/ProviderSelectorPanel");
 // ─────────────────────────────────────────────
 //  Extension lifecycle
 // ─────────────────────────────────────────────
@@ -79,6 +80,11 @@ async function activate(context) {
     const quickPick = new ProviderQuickPick_1.ProviderQuickPick(providerRegistry);
     diagnosticsManager.activate();
     statusBar.activate();
+    // Provider quick pick doesn't need activation, but it does need to be instantiated
+    // Add this command registration inside activate()
+    register('aiAgent.openProviderSelector', () => {
+        ProviderSelectorPanel_1.ProviderSelectorPanel.create(providerRegistry, context);
+    });
     // Keep status bar provider label in sync
     providerRegistry.onProviderChange(() => {
         const meta = providerRegistry.getMeta();

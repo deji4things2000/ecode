@@ -2,6 +2,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { AgentOrchestrator } from '../agents/AgentOrchestrator';
 import { AgentMemory } from '../core/AgentMemory';
+import { ProviderSelectorPanel } from './ProviderSelectorPanel';
 
 export class ChatPanel {
     private static instance: ChatPanel | undefined;
@@ -80,6 +81,7 @@ export class ChatPanel {
                 case 'applyCode': await this.applyCodeToEditor(msg.code); break;
                 case 'copyCode': await vscode.env.clipboard.writeText(msg.code); break;
                 case 'runTool': await this.handleToolRun(msg.tool, msg.params); break;
+                case 'openProviderSelector': ProviderSelectorPanel.create(this.orchestrator.getRegistry(), this.context); break;            
             }
         });
     }

@@ -17,27 +17,31 @@
 
     <!-- ── Header ─────────────────────────────── -->
     <header class="header" role="banner">
-        <div class="header-left">
-            <span class="header-icon">🤖</span>
-            <div class="header-title-group">
-                <h1 class="header-title">AI Agent</h1>
-                <span class="header-subtitle" id="agentLabel">General Agent</span>
-            </div>
+    <div class="header-left">
+        <span class="header-icon">🤖</span>
+        <div class="header-title-group">
+        <h1 class="header-title">AI Agent</h1>
+        <span class="header-subtitle" id="agentLabel">General Agent</span>
         </div>
-        <div class="header-right">
-            <button class="icon-btn" id="statsBtn" title="Agent &amp; memory stats" aria-label="Stats">
-                📊
-            </button>
-            <button class="icon-btn" id="toolsBtn" title="Available tools" aria-label="Tools">
-                🛠️
-            </button>
-            <button class="icon-btn" id="clearBtn" title="Clear chat and memory" aria-label="Clear">
-                🗑️
-            </button>
-            <button class="icon-btn" id="settingsBtn" title="Open VS Code settings" aria-label="Settings">
-                ⚙️
-            </button>
-        </div>
+    </div>
+    <div class="header-right">
+        <!-- Provider badge / switcher button -->
+        <button
+        class="provider-badge"
+        id="providerBtn"
+        title="Switch AI provider"
+        aria-label="Switch Provider">
+        🎮 Demo
+        </button>
+        <button class="icon-btn" id="statsBtn"
+        title="Agent &amp; memory stats" aria-label="Stats">📊</button>
+        <button class="icon-btn" id="toolsBtn"
+        title="Available tools" aria-label="Tools">🛠️</button>
+        <button class="icon-btn" id="clearBtn"
+        title="Clear chat and memory" aria-label="Clear">🗑️</button>
+        <button class="icon-btn" id="settingsBtn"
+        title="Open VS Code settings" aria-label="Settings">⚙️</button>
+    </div>
     </header>
 
     <!-- ── Agent type tabs ────────────────────── -->

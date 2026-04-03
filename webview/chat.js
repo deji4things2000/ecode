@@ -184,6 +184,13 @@
       });
     }
 
+    const providerBtn = document.getElementById('providerBtn');
+    if (providerBtn) {
+      providerBtn.addEventListener('click', () => {
+        vscode.postMessage({ command: 'openProviderSelector' });
+      });
+    }
+
     // ── Agent tabs ─────────────────────────────
     document.querySelectorAll('.tab').forEach(tab => {
       tab.addEventListener('click', () => {
@@ -285,6 +292,7 @@
       case 'memoryStats':     renderMemoryStats(msg.stats);           break;
       case 'agentStats':      renderAgentStats(msg.stats);            break;
       case 'toolResult':      onToolResult(msg.tool, msg.result);     break;
+      case 'providerChanged': onProviderChanged(msg.providerId, msg.model); break;
       case 'providerChanged': onProviderChanged(msg.providerId, msg.model); break;
     }
   });

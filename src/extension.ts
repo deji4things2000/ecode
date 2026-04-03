@@ -7,6 +7,8 @@ import { DiagnosticsManager }  from './ui/DiagnosticsManager';
 import { AgentStatusBar }      from './ui/AgentStatusBar';
 import { ProviderRegistry }    from './providers/ProviderRegistry';
 import { ProviderQuickPick }   from './ui/ProviderQuickPick';
+import { ProviderSelectorPanel } from './ui/ProviderSelectorPanel';
+
 
 // ─────────────────────────────────────────────
 //  Extension lifecycle
@@ -63,7 +65,12 @@ export async function activate(
 
   diagnosticsManager.activate();
   statusBar.activate();
-
+  // Provider quick pick doesn't need activation, but it does need to be instantiated
+// Add this command registration inside activate()
+  register('aiAgent.openProviderSelector', () => {
+    ProviderSelectorPanel.create(providerRegistry, context);
+  });
+  
   // Keep status bar provider label in sync
   providerRegistry.onProviderChange(() => {
     const meta = providerRegistry.getMeta();

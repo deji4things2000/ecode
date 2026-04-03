@@ -58,6 +58,12 @@
         "category": "AI Agent"
       },
       {
+        "command":  "aiAgent.openProviderSelector",
+        "title":    "AI Agent: Select Provider",
+        "category": "AI Agent",
+        "icon":     "$(server)"
+      },
+      {
         "command":  "aiAgent.refactorCode",
         "title":    "AI Agent: Smart Refactor",
         "category": "AI Agent"

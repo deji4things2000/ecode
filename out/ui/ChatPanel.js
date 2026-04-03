@@ -36,6 +36,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ChatPanel = void 0;
 const path = __importStar(require("path"));
 const vscode = __importStar(require("vscode"));
+const ProviderSelectorPanel_1 = require("./ProviderSelectorPanel");
 class ChatPanel {
     constructor(orchestrator, memory, context) {
         this.orchestrator = orchestrator;
@@ -103,6 +104,9 @@ class ChatPanel {
                     break;
                 case 'runTool':
                     await this.handleToolRun(msg.tool, msg.params);
+                    break;
+                case 'openProviderSelector':
+                    ProviderSelectorPanel_1.ProviderSelectorPanel.create(this.orchestrator.getRegistry(), this.context);
                     break;
             }
         });

@@ -33,8 +33,11 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ProviderRegistry = exports.PROVIDER_CATALOGUE = void 0;
+exports.ProviderRegistry = void 0;
+exports.buildCatalogue = buildCatalogue;
 const vscode = __importStar(require("vscode"));
+const cp = __importStar(require("child_process"));
+const util = __importStar(require("util"));
 const OpenAIProvider_1 = require("./OpenAIProvider");
 const AnthropicProvider_1 = require("./AnthropicProvider");
 const OllamaProvider_1 = require("./OllamaProvider");
@@ -42,99 +45,119 @@ const ClineProvider_1 = require("./ClineProvider");
 const AiderProvider_1 = require("./AiderProvider");
 const CortexProvider_1 = require("./CortexProvider");
 const LocalLLMProvider_1 = require("./LocalLLMProvider");
+const exec = util.promisify(cp.exec);
 // ─────────────────────────────────────────────
-//  Provider catalogue — all 6 open-source solutions
-//  plus OpenAI and Anthropic
+//  Provider catalogue
 // ─────────────────────────────────────────────
-exports.PROVIDER_CATALOGUE = [
-    {
-        id: 'ollama',
-        displayName: 'Ollama',
-        description: 'Easiest local setup — no API key, full privacy',
-        icon: '🦙',
-        requiresKey: false,
-        isLocal: true,
-        setupUrl: 'https://ollama.com/download',
-        models: ['llama3.2', 'codellama', 'deepseek-coder', 'qwen2.5-coder', 'mistral'],
-        strength: 'Easiest setup · Full features · No cost',
-    },
-    {
-        id: 'cline',
-        displayName: 'Cline',
-        description: 'Most popular open-source agent with MCP tool support',
-        icon: '🔧',
-        requiresKey: false,
-        isLocal: false,
-        setupUrl: 'https://github.com/cline/cline',
-        models: ['claude-3-5-sonnet-20241022', 'gpt-4o'],
-        strength: 'Most popular · MCP tools · Advanced workflows',
-    },
-    {
-        id: 'aider',
-        displayName: 'Aider',
-        description: 'Git-integrated AI coding with cost optimization',
-        icon: '🔀',
-        requiresKey: false,
-        isLocal: false,
-        setupUrl: 'https://aider.chat/docs/install.html',
-        models: ['gpt-4o', 'claude-3-5-sonnet-20241022', 'deepseek/deepseek-coder'],
-        strength: 'Git integration · Cost optimization · Terminal workflows',
-    },
-    {
-        id: 'cortex',
-        displayName: 'CortexIDE',
-        description: 'Complete privacy-first IDE — local Cursor alternative',
-        icon: '🧠',
-        requiresKey: false,
-        isLocal: true,
-        setupUrl: 'https://cortex.so/docs',
-        models: ['cortexso/llama3.2', 'cortexso/codestral', 'cortexso/mistral'],
-        strength: 'Privacy-first · Complete IDE replacement · No telemetry',
-    },
-    {
-        id: 'localllm',
-        displayName: 'Local LLM Copilot',
-        description: 'Fast completions via LM Studio, llama.cpp, or Jan',
-        icon: '💻',
-        requiresKey: false,
-        isLocal: true,
-        setupUrl: 'https://lmstudio.ai',
-        models: ['local-model', 'codellama-7b', 'deepseek-coder-6.7b'],
-        strength: 'Fastest completions · Lightweight · Zero cost',
-    },
-    {
-        id: 'openai',
-        displayName: 'OpenAI',
-        description: 'GPT-4o and GPT-4 — highest quality cloud AI',
-        icon: '✨',
-        requiresKey: true,
-        isLocal: false,
-        setupUrl: 'https://platform.openai.com/api-keys',
-        models: ['gpt-4o', 'gpt-4', 'gpt-3.5-turbo'],
-        strength: 'Highest quality · Best reasoning · Widely tested',
-    },
-    {
-        id: 'anthropic',
-        displayName: 'Anthropic Claude',
-        description: 'Claude 3.5 Sonnet — excellent for long context',
-        icon: '🌟',
-        requiresKey: true,
-        isLocal: false,
-        setupUrl: 'https://console.anthropic.com',
-        models: ['claude-3-5-sonnet-20241022', 'claude-3-opus-20240229'],
-        strength: 'Long context · Nuanced analysis · Safety-focused',
-    },
-    {
-        id: 'mock',
-        displayName: 'Demo Mode',
-        description: 'Test the full UI without any API key or local server',
-        icon: '🎮',
-        requiresKey: false,
-        isLocal: true,
-        models: ['mock-v1'],
-        strength: 'Zero setup · UI testing · No cost',
-    },
-];
+function buildCatalogue() {
+    return [
+        {
+            id: 'ollama',
+            displayName: 'Ollama',
+            description: 'Run LLMs locally — no API key, full privacy',
+            icon: '🦙',
+            requiresKey: false,
+            isLocal: true,
+            setupUrl: 'https://ollama.com/download',
+            installCmd: process.platform === 'darwin'
+                ? 'brew install ollama'
+                : 'curl -fsSL https://ollama.com/install.sh | sh',
+            startCmd: 'ollama serve',
+            models: ['llama3.2', 'codellama', 'deepseek-coder', 'qwen2.5-coder', 'mistral'],
+            strength: 'Easiest setup · Full features · No cost',
+            status: 'unknown',
+        },
+        {
+            id: 'localllm',
+            displayName: 'LM Studio',
+            description: 'Fast completions via LM Studio desktop app',
+            icon: '💻',
+            requiresKey: false,
+            isLocal: true,
+            setupUrl: 'https://lmstudio.ai',
+            startCmd: 'open -a "LM Studio"',
+            models: ['local-model'],
+            strength: 'Fastest completions · Desktop app · Zero cost',
+            status: 'unknown',
+        },
+        {
+            id: 'cortex',
+            displayName: 'CortexIDE',
+            description: 'Privacy-first local LLM — Cursor alternative',
+            icon: '🧠',
+            requiresKey: false,
+            isLocal: true,
+            setupUrl: 'https://cortex.so/docs',
+            installCmd: 'npm install -g @janhq/cortexso',
+            startCmd: 'cortex start',
+            models: ['cortexso/llama3.2', 'cortexso/mistral'],
+            strength: 'Privacy-first · No telemetry · Local',
+            status: 'unknown',
+        },
+        {
+            id: 'cline',
+            displayName: 'Cline',
+            description: 'Most popular open-source agent with MCP tools',
+            icon: '🔧',
+            requiresKey: false,
+            isLocal: false,
+            setupUrl: 'https://github.com/cline/cline',
+            installCmd: 'code --install-extension saoudrizwan.claude-dev',
+            models: ['claude-3-5-sonnet-20241022', 'gpt-4o'],
+            strength: 'Most popular · MCP tools · Advanced workflows',
+            status: 'unknown',
+        },
+        {
+            id: 'aider',
+            displayName: 'Aider',
+            description: 'Git-integrated AI coding with cost optimization',
+            icon: '🔀',
+            requiresKey: false,
+            isLocal: false,
+            setupUrl: 'https://aider.chat/docs/install.html',
+            installCmd: 'pip install aider-chat',
+            models: ['gpt-4o', 'claude-3-5-sonnet-20241022'],
+            strength: 'Git integration · Cost optimization · Terminal',
+            status: 'unknown',
+        },
+        {
+            id: 'openai',
+            displayName: 'OpenAI',
+            description: 'GPT-4o — highest quality cloud AI',
+            icon: '✨',
+            requiresKey: true,
+            isLocal: false,
+            setupUrl: 'https://platform.openai.com/api-keys',
+            models: ['gpt-4o', 'gpt-4', 'gpt-3.5-turbo'],
+            strength: 'Highest quality · Best reasoning · Widely tested',
+            status: 'unknown',
+        },
+        {
+            id: 'anthropic',
+            displayName: 'Anthropic Claude',
+            description: 'Claude 3.5 Sonnet — excellent long context',
+            icon: '🌟',
+            requiresKey: true,
+            isLocal: false,
+            setupUrl: 'https://console.anthropic.com',
+            models: ['claude-3-5-sonnet-20241022', 'claude-3-opus-20240229'],
+            strength: 'Long context · Nuanced analysis · Safety-focused',
+            status: 'unknown',
+        },
+        {
+            id: 'mock',
+            displayName: 'Demo Mode',
+            description: 'Test the full UI — no setup needed',
+            icon: '🎮',
+            requiresKey: false,
+            isLocal: true,
+            setupUrl: '',
+            models: ['mock-v1'],
+            strength: 'Zero setup · UI testing · Always works',
+            status: 'ready',
+        },
+    ];
+}
 // ─────────────────────────────────────────────
 //  ProviderRegistry
 // ─────────────────────────────────────────────
@@ -144,72 +167,174 @@ class ProviderRegistry {
         this.listeners = [];
         this.activeProvider = initialProvider;
         this.activeProviderID = initialID;
+        this.catalogue = buildCatalogue();
     }
-    // ── Active provider ───────────────────────────
+    // ── Getters ───────────────────────────────────
     getProvider() { return this.activeProvider; }
     getProviderID() { return this.activeProviderID; }
-    getMeta() {
-        return exports.PROVIDER_CATALOGUE.find(p => p.id === this.activeProviderID)
-            ?? exports.PROVIDER_CATALOGUE[exports.PROVIDER_CATALOGUE.length - 1];
+    getCatalogue() { return this.catalogue; }
+    getMeta(id) {
+        return this.catalogue.find(p => p.id === (id ?? this.activeProviderID))
+            ?? this.catalogue[this.catalogue.length - 1];
+    }
+    // ── Status detection ──────────────────────────
+    /**
+     * Check every provider's status in parallel.
+     * Updates the catalogue in-place so the UI can show
+     * green/red indicators without blocking.
+     */
+    async detectAllStatuses() {
+        await Promise.all(this.catalogue.map(meta => this.detectStatus(meta)));
+    }
+    async detectStatus(meta) {
+        meta.status = 'checking';
+        try {
+            let status = 'unknown';
+            switch (meta.id) {
+                case 'ollama': {
+                    const installed = await this.commandExists('ollama');
+                    if (!installed) {
+                        status = 'not-installed';
+                        break;
+                    }
+                    const running = await this.portOpen('localhost', 11434);
+                    status = running ? 'ready' : 'not-running';
+                    break;
+                }
+                case 'cortex': {
+                    const installed = await this.commandExists('cortex');
+                    if (!installed) {
+                        status = 'not-installed';
+                        break;
+                    }
+                    const running = await this.portOpen('localhost', 39281);
+                    status = running ? 'ready' : 'not-running';
+                    break;
+                }
+                case 'localllm': {
+                    // LM Studio listens on 1234 by default
+                    const running = await this.portOpen('localhost', 1234);
+                    status = running ? 'ready' : 'not-running';
+                    break;
+                }
+                case 'aider': {
+                    const installed = await this.commandExists('aider');
+                    status = installed ? 'ready' : 'not-installed';
+                    break;
+                }
+                case 'cline': {
+                    const ext = vscode.extensions.getExtension('saoudrizwan.claude-dev');
+                    status = ext ? 'ready' : 'not-installed';
+                    break;
+                }
+                case 'openai': {
+                    const config = vscode.workspace.getConfiguration('aiAgent');
+                    const key = config.get('openaiApiKey') ?? '';
+                    status = key.length > 10 ? 'ready' : 'needs-key';
+                    break;
+                }
+                case 'anthropic': {
+                    const config = vscode.workspace.getConfiguration('aiAgent');
+                    const key = config.get('anthropicApiKey') ?? '';
+                    status = key.length > 10 ? 'ready' : 'needs-key';
+                    break;
+                }
+                case 'mock':
+                    status = 'ready';
+                    break;
+            }
+            meta.status = status;
+            return status;
+        }
+        catch {
+            meta.status = 'unknown';
+            return 'unknown';
+        }
+    }
+    // ── Auto-install ──────────────────────────────
+    /**
+     * Attempt to install a provider automatically.
+     * Opens a terminal and runs the install command.
+     * Returns true if a command was started.
+     */
+    async autoInstall(id) {
+        const meta = this.getMeta(id);
+        if (!meta.installCmd) {
+            return false;
+        }
+        const terminal = vscode.window.createTerminal({
+            name: `Install ${meta.displayName}`,
+        });
+        terminal.show();
+        terminal.sendText(meta.installCmd);
+        // For Ollama on Mac, also offer brew cask
+        if (id === 'ollama' && process.platform === 'darwin') {
+            const answer = await vscode.window.showInformationMessage('🦙 Installing Ollama via Homebrew. If brew is not installed, download from ollama.com instead.', 'Open Download Page', 'Continue with brew');
+            if (answer === 'Open Download Page') {
+                vscode.env.openExternal(vscode.Uri.parse(meta.setupUrl));
+            }
+        }
+        return true;
+    }
+    /**
+     * Start a local provider's server in a terminal.
+     */
+    async autoStart(id) {
+        const meta = this.getMeta(id);
+        if (!meta.startCmd) {
+            return;
+        }
+        const terminal = vscode.window.createTerminal({
+            name: `${meta.icon} ${meta.displayName}`,
+        });
+        terminal.show();
+        terminal.sendText(meta.startCmd);
+        // Wait 3 seconds then re-check status
+        await new Promise(r => setTimeout(r, 3000));
+        await this.detectStatus(meta);
     }
     // ── Switching ─────────────────────────────────
     async switchProvider(id) {
+        const meta = this.getMeta(id);
         const provider = await this.build(id);
         this.activeProvider = provider;
         this.activeProviderID = id;
-        // Persist the choice
         await this.context.globalState.update('aiAgent.activeProvider', id);
-        // Notify listeners (status bar, chat panel, etc.)
         this.listeners.forEach(fn => fn(id, provider));
         return provider;
     }
     onProviderChange(fn) {
         this.listeners.push(fn);
     }
+    async restoreProvider() {
+        const saved = this.context.globalState.get('aiAgent.activeProvider');
+        if (saved && saved !== this.activeProviderID) {
+            await this.switchProvider(saved).catch(() => { });
+        }
+    }
     // ── Factory ───────────────────────────────────
     async build(id) {
         const config = vscode.workspace.getConfiguration('aiAgent');
         switch (id) {
-            // ── OpenAI ────────────────────────────────────
             case 'openai': {
                 const key = config.get('openaiApiKey') ?? '';
                 const model = config.get('model') ?? 'gpt-4o';
-                if (!key) {
-                    this.promptForKey('openai');
-                }
                 return new OpenAIProvider_1.OpenAIProvider(key, model);
             }
-            // ── Anthropic ─────────────────────────────────
             case 'anthropic': {
                 const key = config.get('anthropicApiKey') ?? '';
                 const model = config.get('model') ?? 'claude-3-5-sonnet-20241022';
-                if (!key) {
-                    this.promptForKey('anthropic');
-                }
                 return new AnthropicProvider_1.AnthropicProvider(key, model);
             }
-            // ── Ollama ────────────────────────────────────
             case 'ollama': {
-                const provider = new OllamaProvider_1.OllamaProvider({
+                return new OllamaProvider_1.OllamaProvider({
                     baseUrl: config.get('ollama.baseUrl') ?? 'http://localhost:11434',
                     model: config.get('ollama.model') ?? 'llama3.2',
                 });
-                const available = await provider.isAvailable();
-                if (!available) {
-                    vscode.window.showWarningMessage('🦙 Ollama is not running. Install it from ollama.com then run: ollama serve', 'Open Download Page').then(btn => {
-                        if (btn) {
-                            vscode.env.openExternal(vscode.Uri.parse('https://ollama.com/download'));
-                        }
-                    });
-                }
-                return provider;
             }
-            // ── Cline ─────────────────────────────────────
             case 'cline': {
-                // Cline delegates to the currently configured cloud provider
                 const delegateID = config.get('cline.delegateProvider') ?? 'openai';
                 const delegate = await this.build(delegateID);
-                // Load MCP servers from config
                 const mcpServers = config.get('cline.mcpServers') ?? {};
                 return new ClineProvider_1.ClineProvider({
                     delegateProvider: delegate,
@@ -217,7 +342,6 @@ class ProviderRegistry {
                     useClineExtension: config.get('cline.useExtension') ?? true,
                 });
             }
-            // ── Aider ─────────────────────────────────────
             case 'aider': {
                 const delegateID = config.get('aider.delegateProvider') ?? 'openai';
                 const delegate = await this.build(delegateID);
@@ -225,97 +349,78 @@ class ProviderRegistry {
                     delegateProvider: delegate,
                     aiderPath: config.get('aider.path') ?? 'aider',
                     autoCommits: config.get('aider.autoCommits') ?? true,
-                    showCostEstimate: config.get('aider.showCost') ?? true,
                 });
             }
-            // ── CortexIDE ─────────────────────────────────
             case 'cortex': {
-                const provider = new CortexProvider_1.CortexProvider({
+                return new CortexProvider_1.CortexProvider({
                     baseUrl: config.get('cortex.baseUrl') ?? 'http://localhost:39281',
                     model: config.get('cortex.model') ?? 'cortexso/llama3.2',
                 });
-                const available = await provider.isAvailable();
-                if (!available) {
-                    vscode.window.showWarningMessage('🧠 CortexIDE server is not running. Start it with: cortex start', 'Open Docs').then(btn => {
-                        if (btn) {
-                            vscode.env.openExternal(vscode.Uri.parse('https://cortex.so/docs'));
-                        }
-                    });
-                }
-                return provider;
             }
-            // ── Local LLM ─────────────────────────────────
             case 'localllm': {
-                const backend = config.get('localllm.backend') ?? 'lmstudio';
-                const provider = new LocalLLMProvider_1.LocalLLMProvider({
-                    backend: backend,
+                return new LocalLLMProvider_1.LocalLLMProvider({
+                    backend: (config.get('localllm.backend') ?? 'lmstudio'),
                     baseUrl: config.get('localllm.baseUrl'),
                     model: config.get('localllm.model') ?? 'local-model',
                     contextSize: config.get('localllm.contextSize') ?? 4096,
                 });
-                const available = await provider.isAvailable();
-                if (!available) {
-                    vscode.window.showWarningMessage(`💻 Local LLM server (${backend}) is not running.`, 'Open LM Studio').then(btn => {
-                        if (btn) {
-                            vscode.env.openExternal(vscode.Uri.parse('https://lmstudio.ai'));
-                        }
-                    });
-                }
-                return provider;
             }
-            // ── Mock ──────────────────────────────────────
             case 'mock':
             default:
                 return this.buildMock();
         }
     }
-    // ── Restore last used provider on startup ─────
-    async restoreProvider() {
-        const saved = this.context.globalState.get('aiAgent.activeProvider');
-        if (saved && saved !== this.activeProviderID) {
-            try {
-                await this.switchProvider(saved);
-            }
-            catch {
-                // If restore fails fall back to current provider silently
-            }
+    // ── Utility helpers ───────────────────────────
+    async commandExists(cmd) {
+        try {
+            const which = process.platform === 'win32' ? 'where' : 'which';
+            await exec(`${which} ${cmd}`);
+            return true;
+        }
+        catch {
+            return false;
         }
     }
-    // ── Helpers ───────────────────────────────────
-    promptForKey(provider) {
-        const labels = {
-            openai: 'OpenAI API key (platform.openai.com/api-keys)',
-            anthropic: 'Anthropic API key (console.anthropic.com)',
-        };
-        vscode.window.showWarningMessage(`⚠️ No ${labels[provider]} configured.`, 'Open Settings').then(btn => {
-            if (btn) {
-                vscode.commands.executeCommand('workbench.action.openSettings', `aiAgent.${provider}ApiKey`);
-            }
+    portOpen(host, port) {
+        return new Promise(resolve => {
+            const net = require('net');
+            const socket = new net.Socket();
+            const timer = setTimeout(() => {
+                socket.destroy();
+                resolve(false);
+            }, 2000);
+            socket.connect(port, host, () => {
+                clearTimeout(timer);
+                socket.destroy();
+                resolve(true);
+            });
+            socket.on('error', () => {
+                clearTimeout(timer);
+                resolve(false);
+            });
         });
     }
     buildMock() {
-        // Inline mock so ProviderRegistry has no circular dep on extension.ts
         return {
             name: 'mock',
             async complete(req) {
                 await new Promise(r => setTimeout(r, 500));
                 const p = req.userMessage.toLowerCase();
-                let content = '🎮 **Demo mode** — add a provider in settings for real AI.\n\n';
+                let content = '🎮 **Demo mode** — add a provider to get real AI responses.\n\n';
                 if (p.includes('test')) {
                     content += '```js\nit("works", () => expect(true).toBe(true));\n```';
                 }
                 else if (p.includes('bug')) {
                     content += 'Found: missing null-check on line 7.';
                 }
-                else if (p.includes('[]') || p.includes('json')) {
-                    content = '[]';
-                }
                 else {
                     content += 'I can analyze, debug, refactor, and generate tests.';
                 }
                 return { content, model: 'mock-v1' };
             },
-            async ask(prompt) { return (await this.complete({ systemPrompt: '', userMessage: prompt })).content; },
+            async ask(prompt) {
+                return (await this.complete({ systemPrompt: '', userMessage: prompt })).content;
+            },
         };
     }
 }
