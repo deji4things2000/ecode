@@ -165,6 +165,7 @@ class ProviderRegistry {
     constructor(context, initialProvider, initialID) {
         this.context = context;
         this.listeners = [];
+        this.installListeners = [];
         this.activeProvider = initialProvider;
         this.activeProviderID = initialID;
         this.catalogue = buildCatalogue();
@@ -254,8 +255,8 @@ class ProviderRegistry {
     // ── Auto-install ──────────────────────────────
     /**
      * Attempt to install a provider automatically.
-     * Opens a terminal and runs the install command.
-     * Returns true if a command was started.
+     * Opens a terminal and runs the install command, then polls for completion.
+     * Emits progress updates via onInstallProgress listeners.
      */
     async autoInstall(id) {
         const meta = this.getMeta(id);
@@ -266,15 +267,45 @@ class ProviderRegistry {
             name: `Install ${meta.displayName}`,
         });
         terminal.show();
-        terminal.sendText(meta.installCmd);
+        terminal.sendText(meta.installCmd + '; echo "INSTALL_COMPLETE"');
+        // Emit 'installing' status immediately
+        this.emitInstallProgress(id, 'installing');
         // For Ollama on Mac, also offer brew cask
         if (id === 'ollama' && process.platform === 'darwin') {
             const answer = await vscode.window.showInformationMessage('🦙 Installing Ollama via Homebrew. If brew is not installed, download from ollama.com instead.', 'Open Download Page', 'Continue with brew');
             if (answer === 'Open Download Page') {
                 vscode.env.openExternal(vscode.Uri.parse(meta.setupUrl));
+                return false;
             }
         }
-        return true;
+        // Poll for completion by checking if command now exists
+        // Wait up to 10 minutes for install to complete
+        const maxAttempts = 120; // 120 * 5 seconds = 10 minutes
+        for (let i = 0; i < maxAttempts; i++) {
+            await new Promise(r => setTimeout(r, 5000)); // Check every 5 seconds
+            // Emit 'checking' status after a few seconds
+            if (i === 2) {
+                this.emitInstallProgress(id, 'checking');
+            }
+            const prevStatus = meta.status;
+            await this.detectStatus(meta);
+            // If status changed to ready, install succeeded
+            if (meta.status === 'ready' && prevStatus !== 'ready') {
+                this.emitInstallProgress(id, 'ready');
+                vscode.window.showInformationMessage(`✅ ${meta.displayName} installed successfully! Ready to use.`);
+                return true;
+            }
+            // If 'not-running', installation likely succeeded but server not started
+            if (meta.status === 'not-running' && i > 20) {
+                this.emitInstallProgress(id, 'ready');
+                vscode.window.showInformationMessage(`✅ ${meta.displayName} installed! You can now start the server.`);
+                return true;
+            }
+        }
+        // Timeout after 10 minutes
+        this.emitInstallProgress(id, 'failed');
+        vscode.window.showWarningMessage(`⏱️ Installation timeout. Please check the terminal for errors.`);
+        return false;
     }
     /**
      * Start a local provider's server in a terminal.
@@ -305,6 +336,12 @@ class ProviderRegistry {
     }
     onProviderChange(fn) {
         this.listeners.push(fn);
+    }
+    onInstallProgress(fn) {
+        this.installListeners.push(fn);
+    }
+    emitInstallProgress(id, status) {
+        this.installListeners.forEach(fn => fn(id, status));
     }
     async restoreProvider() {
         const saved = this.context.globalState.get('aiAgent.activeProvider');

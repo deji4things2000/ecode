@@ -41,6 +41,11 @@ export class ProviderSelectorPanel {
       ProviderSelectorPanel.instance = undefined;
     });
 
+    // Listen to install progress events from registry
+    this.registry.onInstallProgress((id, status) => {
+      this.post({ command: 'installProgress', id, status });
+    });
+
     // Send initial data once the webview is ready
     // Small delay ensures the webview JS has executed
     setTimeout(() => this.sendProviderData(), 300);
@@ -171,20 +176,13 @@ export class ProviderSelectorPanel {
 
     this.post({ command: 'setStatus', id, status: 'installing' });
 
-    const started = await this.registry.autoInstall(id);
+    // autoInstall now handles polling and emits progress events
+    // Progress events are sent to webview via registry.onInstallProgress listener
+    const success = await this.registry.autoInstall(id);
 
-    if (started) {
-      vscode.window.showInformationMessage(
-        `${meta.icon} Installing ${meta.displayName} in terminal…\n` +
-        `Switch back to the provider panel after installation completes.`
-      );
-      // Poll status every 5 s for up to 2 minutes
-      this.pollStatus(id, 5_000, 24);
-    } else {
+    if (!success && meta.setupUrl) {
       // No install command — open download page
-      if (meta.setupUrl) {
-        vscode.env.openExternal(vscode.Uri.parse(meta.setupUrl));
-      }
+      vscode.env.openExternal(vscode.Uri.parse(meta.setupUrl));
     }
   }
 
@@ -693,6 +691,9 @@ export class ProviderSelectorPanel {
         case 'setStatus':
           updateCardStatus(msg.id, msg.status);
           break;
+        case 'installProgress':
+          updateInstallProgress(msg.id, msg.status);
+          break;
         case 'providerSelected':
           activeProviderID = msg.id;
           renderGrid();
@@ -865,6 +866,28 @@ export class ProviderSelectorPanel {
           card.outerHTML = renderCard(p);
         }
       }
+    }
+
+    // ── Install progress update ──────────────────
+    function updateInstallProgress(id, status) {
+      const p = providers.find(x => x.id === id);
+      if (!p) return;
+
+      // Map progress status to display status with better messaging
+      let displayStatus = status;
+      if (status === 'installing') {
+        displayStatus = 'installing'; // "⬇ Installing"
+      } else if (status === 'checking') {
+        displayStatus = 'checking';   // "… Checking"
+      } else if (status === 'ready') {
+        // Keep whatever status reflects readiness
+        displayStatus = 'ready';
+      } else if (status === 'failed') {
+        displayStatus = 'unknown';    // Show as unknown/error
+      }
+
+      // Update just the card status without full re-render
+      updateCardStatus(id, displayStatus);
     }
 
     // ── Global action functions ───────────────────

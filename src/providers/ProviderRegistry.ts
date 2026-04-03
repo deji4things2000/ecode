@@ -172,6 +172,7 @@ export class ProviderRegistry {
   private activeProviderID: ProviderID;
   private catalogue:        ProviderMeta[];
   private readonly listeners: Array<(id: ProviderID, p: AIProvider) => void> = [];
+  private readonly installListeners: Array<(id: ProviderID, status: 'installing' | 'checking' | 'ready' | 'failed') => void> = [];
 
   constructor(
     private readonly context: vscode.ExtensionContext,
@@ -282,8 +283,8 @@ export class ProviderRegistry {
 
   /**
    * Attempt to install a provider automatically.
-   * Opens a terminal and runs the install command.
-   * Returns true if a command was started.
+   * Opens a terminal and runs the install command, then polls for completion.
+   * Emits progress updates via onInstallProgress listeners.
    */
   async autoInstall(
     id: ProviderID
@@ -295,7 +296,10 @@ export class ProviderRegistry {
       name: `Install ${meta.displayName}`,
     });
     terminal.show();
-    terminal.sendText(meta.installCmd);
+    terminal.sendText(meta.installCmd + '; echo "INSTALL_COMPLETE"');
+
+    // Emit 'installing' status immediately
+    this.emitInstallProgress(id, 'installing');
 
     // For Ollama on Mac, also offer brew cask
     if (id === 'ollama' && process.platform === 'darwin') {
@@ -306,10 +310,49 @@ export class ProviderRegistry {
       );
       if (answer === 'Open Download Page') {
         vscode.env.openExternal(vscode.Uri.parse(meta.setupUrl));
+        return false;
       }
     }
 
-    return true;
+    // Poll for completion by checking if command now exists
+    // Wait up to 10 minutes for install to complete
+    const maxAttempts = 120; // 120 * 5 seconds = 10 minutes
+    for (let i = 0; i < maxAttempts; i++) {
+      await new Promise(r => setTimeout(r, 5_000)); // Check every 5 seconds
+
+      // Emit 'checking' status after a few seconds
+      if (i === 2) {
+        this.emitInstallProgress(id, 'checking');
+      }
+
+      const prevStatus = meta.status;
+      await this.detectStatus(meta);
+
+      // If status changed to ready, install succeeded
+      if (meta.status === 'ready' && prevStatus !== 'ready') {
+        this.emitInstallProgress(id, 'ready');
+        vscode.window.showInformationMessage(
+          `✅ ${meta.displayName} installed successfully! Ready to use.`
+        );
+        return true;
+      }
+
+      // If 'not-running', installation likely succeeded but server not started
+      if (meta.status === 'not-running' && i > 20) {
+        this.emitInstallProgress(id, 'ready');
+        vscode.window.showInformationMessage(
+          `✅ ${meta.displayName} installed! You can now start the server.`
+        );
+        return true;
+      }
+    }
+
+    // Timeout after 10 minutes
+    this.emitInstallProgress(id, 'failed');
+    vscode.window.showWarningMessage(
+      `⏱️ Installation timeout. Please check the terminal for errors.`
+    );
+    return false;
   }
 
   /**
@@ -349,6 +392,16 @@ export class ProviderRegistry {
     fn: (id: ProviderID, provider: AIProvider) => void
   ): void {
     this.listeners.push(fn);
+  }
+
+  onInstallProgress(
+    fn: (id: ProviderID, status: 'installing' | 'checking' | 'ready' | 'failed') => void
+  ): void {
+    this.installListeners.push(fn);
+  }
+
+  private emitInstallProgress(id: ProviderID, status: 'installing' | 'checking' | 'ready' | 'failed'): void {
+    this.installListeners.forEach(fn => fn(id, status));
   }
 
   async restoreProvider(): Promise<void> {
