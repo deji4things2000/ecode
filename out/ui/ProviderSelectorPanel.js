@@ -80,9 +80,12 @@ class ProviderSelectorPanel {
         this.panel.webview.onDidReceiveMessage(async (msg) => {
             switch (msg.command) {
                 case 'ready':
-                    // Webview finished loading — send data
-                    await this.registry.detectAllStatuses();
+                    // Webview finished loading — send data immediately (don't block on detection)
                     this.sendProviderData();
+                    // Run detection async in background to show statuses as they complete
+                    this.registry.detectAllStatuses()
+                        .then(() => this.sendProviderData())
+                        .catch(err => console.error('[AI Agent] Status detection error:', err));
                     break;
                 case 'selectProvider':
                     await this.handleSelect(msg.id);

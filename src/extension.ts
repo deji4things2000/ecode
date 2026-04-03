@@ -27,30 +27,62 @@ export async function activate(
   const scanner = new WorkspaceScanner(memory);
 
   // ── Provider registry ─────────────────────────
-  // Start with mock for reliability. Try to restore user's last choice,
-  // but silently fall back to mock if unavailable.
+  // Always start with Mock (always works). Then try to restore or use configured provider,
+  // but ONLY if we can verify it's actually available.
   const mockProvider: any = {
     name: 'mock',
     async complete(req: any) {
       await new Promise(r => setTimeout(r, 500));
-      return { content: 'Demo mode enabled. Add a provider to get real responses.', model: 'mock-v1' };
+      return { content: '🎮 **Demo Mode Active**\n\nThis is mock AI — responses are simulated.\n\n**To use real AI:** Click the **📋 Provider** button in the chat header and select an AI provider (Ollama, OpenAI, Anthropic, etc.).', model: 'mock-v1' };
     },
     async ask(prompt: string) {
-      return 'Demo mode. Switch a provider in settings.';
+      return 'Demo Mode: Use the 📋 Provider button in chat to select a real AI provider.';
     },
   };
   const providerRegistry = new ProviderRegistry(context, mockProvider, 'mock');
-  await providerRegistry.restoreProvider();
-
-  // If nothing was persisted, try to build from the settings key
+  
+  // Try to restore the user's last provider, but validate it first
+  const saved = context.globalState.get<string>('aiAgent.activeProvider');
+  if (saved && saved !== 'mock') {
+    try {
+      // Detect status quickly to see if provider is available
+      const catalogue = providerRegistry.getCatalogue();
+      const meta = catalogue.find(p => p.id === saved);
+      if (meta) {
+        await providerRegistry.detectStatus(meta);
+        // Only restore if status is 'ready', otherwise stay on mock
+        if (meta.status === 'ready') {
+          try {
+            await providerRegistry.switchProvider(saved as any);
+            console.log(`[AI Agent] Restored provider: ${meta.displayName}`);
+          } catch (err: any) {
+            console.log(`[AI Agent] Failed to restore ${meta.displayName}, using mock.`);
+          }
+        } else {
+          console.log(`[AI Agent] Provider ${meta.displayName} not available (${meta.status}), using mock.`);
+        }
+      }
+    } catch (err: any) {
+      console.log(`[AI Agent] Error checking saved provider, using mock.`);
+    }
+  }
+  
+  // If still on mock and a non-mock provider is configured, try to use it
   if (providerRegistry.getProviderID() === 'mock') {
-    const configuredID =
-      (config.get<string>('primaryProvider') ?? 'mock') as any;
-    if (configuredID !== 'mock') {
+    const configuredID = config.get<string>('primaryProvider');
+    if (configuredID && configuredID !== 'mock') {
       try {
-        await providerRegistry.switchProvider(configuredID);
+        const catalogue = providerRegistry.getCatalogue();
+        const meta = catalogue.find(p => p.id === configuredID);
+        if (meta) {
+          await providerRegistry.detectStatus(meta);
+          if (meta.status === 'ready') {
+            await providerRegistry.switchProvider(configuredID as any);
+            console.log(`[AI Agent] Using configured provider: ${meta.displayName}`);
+          }
+        }
       } catch (err) {
-        console.log(`[AI Agent] Provider ${configuredID} unavailable, using mock.`);
+        console.log(`[AI Agent] Primary provider not available, using mock.`);
       }
     }
   }
@@ -310,9 +342,9 @@ export async function activate(
   const meta = providerRegistry.getMeta();
   console.log(`Advanced AI Agent ready — ${meta.icon} ${meta.displayName}`);
 
-  // Automatically open chat panel on first activation
+  // Auto-open chat on first activation
   vscode.window.showInformationMessage(
-    `${meta.icon} AI Agent is ready!`,
+    `${meta.icon} AI Agent ready! Start coding.`,
     'Open Chat'
   ).then(btn => {
     if (btn === 'Open Chat') { ChatPanel.create(orchestrator, memory, providerRegistry, context); }
