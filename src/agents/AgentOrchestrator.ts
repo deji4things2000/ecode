@@ -134,11 +134,11 @@ export class AgentOrchestrator {
       });
     });
 
-    this.analysis     = new CodeAnalysisAgent(provider, memory, this.reasoning, this.registry);
-    this.refactoring  = new RefactoringAgent(provider, memory, this.reasoning, this.registry);
-    this.testing      = new TestGenerationAgent(provider, memory, this.registry);
+    this.analysis     = new CodeAnalysisAgent(provider, memory, this.reasoning);
+    this.refactoring  = new RefactoringAgent(provider, memory, this.reasoning);
+    this.testing      = new TestGenerationAgent(provider, memory);
     this.debug        = new DebugAgent(provider, memory, this.reasoning, this.registry);
-    this.architecture = new ArchitectureAgent(provider, memory, this.reasoning, this.registry);
+    this.architecture = new ArchitectureAgent(provider, memory, this.reasoning);
   }
 
   // ─────────────────────────────────────────────
@@ -156,11 +156,11 @@ export class AgentOrchestrator {
     this.reasoning = new ReasoningEngine(newProvider, this.memory);
 
     // Rebuild every specialist agent
-    this.analysis     = new CodeAnalysisAgent(newProvider, this.memory, this.reasoning, this.registry);
-    this.refactoring  = new RefactoringAgent(newProvider, this.memory, this.reasoning, this.registry);
-    this.testing      = new TestGenerationAgent(newProvider, this.memory, this.registry);
+    this.analysis     = new CodeAnalysisAgent(newProvider, this.memory, this.reasoning);
+    this.refactoring  = new RefactoringAgent(newProvider, this.memory, this.reasoning);
+    this.testing      = new TestGenerationAgent(newProvider, this.memory);
     this.debug        = new DebugAgent(newProvider, this.memory, this.reasoning, this.registry);
-    this.architecture = new ArchitectureAgent(newProvider, this.memory, this.reasoning, this.registry);
+    this.architecture = new ArchitectureAgent(newProvider, this.memory, this.reasoning);
 
     console.log(`[AgentOrchestrator] Provider updated to: ${newProvider.name}`);
   }
