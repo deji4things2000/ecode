@@ -147,7 +147,7 @@ export async function activate(
 
   // ── Chat panel ────────────────────────────────
   register('aiAgent.openChat', () => {
-    ChatPanel.create(orchestrator, memory, context);
+    ChatPanel.create(orchestrator, memory, providerRegistry, context);
   });
 
   // ── Provider / model switching ────────────────
@@ -302,7 +302,7 @@ export async function activate(
     'Open Chat'
   ).then(btn => {
     if (btn === 'Switch Provider') { quickPick.show(); }
-    if (btn === 'Open Chat')       { ChatPanel.create(orchestrator, memory, context); }
+    if (btn === 'Open Chat')       { ChatPanel.create(orchestrator, memory, providerRegistry, context); }
   });
 
   console.log('Advanced AI Agent is active.');

@@ -140,7 +140,7 @@ async function activate(context) {
     // ─────────────────────────────────────────────
     // ── Chat panel ────────────────────────────────
     register('aiAgent.openChat', () => {
-        ChatPanel_1.ChatPanel.create(orchestrator, memory, context);
+        ChatPanel_1.ChatPanel.create(orchestrator, memory, providerRegistry, context);
     });
     // ── Provider / model switching ────────────────
     register('aiAgent.selectProvider', () => {
@@ -271,7 +271,7 @@ async function activate(context) {
             quickPick.show();
         }
         if (btn === 'Open Chat') {
-            ChatPanel_1.ChatPanel.create(orchestrator, memory, context);
+            ChatPanel_1.ChatPanel.create(orchestrator, memory, providerRegistry, context);
         }
     });
     console.log('Advanced AI Agent is active.');

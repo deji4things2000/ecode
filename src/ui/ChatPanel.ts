@@ -2,6 +2,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { AgentOrchestrator } from '../agents/AgentOrchestrator';
 import { AgentMemory } from '../core/AgentMemory';
+import { ProviderRegistry } from '../providers/ProviderRegistry';
 import { ProviderSelectorPanel } from './ProviderSelectorPanel';
 
 export class ChatPanel {
@@ -12,6 +13,7 @@ export class ChatPanel {
     private constructor(
         private readonly orchestrator: AgentOrchestrator,
         private readonly memory: AgentMemory,
+        private readonly providerRegistry: ProviderRegistry,
         private readonly context: vscode.ExtensionContext
     ) {
         this.panel = vscode.window.createWebviewPanel(
@@ -41,13 +43,14 @@ export class ChatPanel {
     static create(
         orchestrator: AgentOrchestrator,
         memory: AgentMemory,
+        providerRegistry: ProviderRegistry,
         context: vscode.ExtensionContext
     ): ChatPanel {
         if (ChatPanel.instance && !ChatPanel.instance.isDisposed) {
             ChatPanel.instance.panel.reveal(vscode.ViewColumn.Beside);
             return ChatPanel.instance;
         }
-        ChatPanel.instance = new ChatPanel(orchestrator, memory, context);
+        ChatPanel.instance = new ChatPanel(orchestrator, memory, providerRegistry, context);
         return ChatPanel.instance;
     }
 
@@ -81,7 +84,7 @@ export class ChatPanel {
                 case 'applyCode': await this.applyCodeToEditor(msg.code); break;
                 case 'copyCode': await vscode.env.clipboard.writeText(msg.code); break;
                 case 'runTool': await this.handleToolRun(msg.tool, msg.params); break;
-                case 'openProviderSelector': ProviderSelectorPanel.create(this.orchestrator.getRegistry(), this.context); break;            
+                case 'openProviderSelector': ProviderSelectorPanel.create(this.providerRegistry, this.context); break;
             }
         });
     }

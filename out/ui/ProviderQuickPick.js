@@ -35,7 +35,6 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ProviderQuickPick = void 0;
 const vscode = __importStar(require("vscode"));
-const ProviderRegistry_1 = require("../providers/ProviderRegistry");
 // ─────────────────────────────────────────────
 //  ProviderQuickPick
 //  VS Code quick-pick menu for switching providers
@@ -46,18 +45,19 @@ class ProviderQuickPick {
     }
     async show() {
         const currentID = this.registry.getProviderID();
+        const catalogue = this.registry.getCatalogue();
         // Build quick-pick items
         const items = [
             {
                 label: '── Local / Offline ──',
                 kind: vscode.QuickPickItemKind.Separator,
             },
-            ...this.buildItems(ProviderRegistry_1.PROVIDER_CATALOGUE.filter(p => p.isLocal), currentID),
+            ...this.buildItems(catalogue.filter(p => p.isLocal), currentID),
             {
                 label: '── Cloud ──',
                 kind: vscode.QuickPickItemKind.Separator,
             },
-            ...this.buildItems(ProviderRegistry_1.PROVIDER_CATALOGUE.filter(p => !p.isLocal), currentID),
+            ...this.buildItems(catalogue.filter(p => !p.isLocal), currentID),
         ];
         const pick = await vscode.window.showQuickPick(items, {
             title: '🤖 AI Agent — Select Provider',
@@ -73,7 +73,7 @@ class ProviderQuickPick {
             return;
         }
         // Check if this provider needs setup
-        const meta = ProviderRegistry_1.PROVIDER_CATALOGUE.find(p => p.id === id);
+        const meta = catalogue.find(p => p.id === id);
         if (meta?.requiresKey) {
             const hasKey = await this.checkApiKey(id);
             if (!hasKey) {
@@ -97,7 +97,8 @@ class ProviderQuickPick {
     // ── Model picker for current provider ────────
     async showModelPicker() {
         const currentID = this.registry.getProviderID();
-        const meta = ProviderRegistry_1.PROVIDER_CATALOGUE.find(p => p.id === currentID);
+        const catalogue = this.registry.getCatalogue();
+        const meta = catalogue.find(p => p.id === currentID);
         if (!meta) {
             return;
         }
@@ -145,7 +146,8 @@ class ProviderQuickPick {
     }
     // ── Setup wizard for new providers ───────────
     async showSetupWizard(id) {
-        const meta = ProviderRegistry_1.PROVIDER_CATALOGUE.find(p => p.id === id);
+        const catalogue = this.registry.getCatalogue();
+        const meta = catalogue.find(p => p.id === id);
         if (!meta) {
             return;
         }

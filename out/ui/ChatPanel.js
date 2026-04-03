@@ -38,9 +38,10 @@ const path = __importStar(require("path"));
 const vscode = __importStar(require("vscode"));
 const ProviderSelectorPanel_1 = require("./ProviderSelectorPanel");
 class ChatPanel {
-    constructor(orchestrator, memory, context) {
+    constructor(orchestrator, memory, providerRegistry, context) {
         this.orchestrator = orchestrator;
         this.memory = memory;
+        this.providerRegistry = providerRegistry;
         this.context = context;
         this.isDisposed = false;
         this.panel = vscode.window.createWebviewPanel('aiAgentChat', '🤖 AI Agent Chat', vscode.ViewColumn.Beside, {
@@ -58,12 +59,12 @@ class ChatPanel {
         });
     }
     // ── Singleton factory ─────────────────────────
-    static create(orchestrator, memory, context) {
+    static create(orchestrator, memory, providerRegistry, context) {
         if (ChatPanel.instance && !ChatPanel.instance.isDisposed) {
             ChatPanel.instance.panel.reveal(vscode.ViewColumn.Beside);
             return ChatPanel.instance;
         }
-        ChatPanel.instance = new ChatPanel(orchestrator, memory, context);
+        ChatPanel.instance = new ChatPanel(orchestrator, memory, providerRegistry, context);
         return ChatPanel.instance;
     }
     // ── Load webview files from disk ──────────────
@@ -106,7 +107,7 @@ class ChatPanel {
                     await this.handleToolRun(msg.tool, msg.params);
                     break;
                 case 'openProviderSelector':
-                    ProviderSelectorPanel_1.ProviderSelectorPanel.create(this.orchestrator.getRegistry(), this.context);
+                    ProviderSelectorPanel_1.ProviderSelectorPanel.create(this.providerRegistry, this.context);
                     break;
             }
         });

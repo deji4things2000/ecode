@@ -2,7 +2,6 @@ import * as vscode from 'vscode';
 import {
   ProviderRegistry,
   ProviderID,
-  PROVIDER_CATALOGUE,
   ProviderMeta,
 } from '../providers/ProviderRegistry';
 
@@ -16,6 +15,7 @@ export class ProviderQuickPick {
 
   async show(): Promise<void> {
     const currentID = this.registry.getProviderID();
+    const catalogue = this.registry.getCatalogue();
 
     // Build quick-pick items
     const items: vscode.QuickPickItem[] = [
@@ -23,12 +23,12 @@ export class ProviderQuickPick {
         label:       '── Local / Offline ──',
         kind:        vscode.QuickPickItemKind.Separator,
       },
-      ...this.buildItems(PROVIDER_CATALOGUE.filter(p => p.isLocal),  currentID),
+      ...this.buildItems(catalogue.filter(p => p.isLocal),  currentID),
       {
         label:       '── Cloud ──',
         kind:        vscode.QuickPickItemKind.Separator,
       },
-      ...this.buildItems(PROVIDER_CATALOGUE.filter(p => !p.isLocal), currentID),
+      ...this.buildItems(catalogue.filter(p => !p.isLocal), currentID),
     ];
 
     const pick = await vscode.window.showQuickPick(items, {
@@ -46,7 +46,7 @@ export class ProviderQuickPick {
     if (!id) { return; }
 
     // Check if this provider needs setup
-    const meta = PROVIDER_CATALOGUE.find(p => p.id === id);
+    const meta = catalogue.find(p => p.id === id);
     if (meta?.requiresKey) {
       const hasKey = await this.checkApiKey(id);
       if (!hasKey) { return; }
@@ -77,7 +77,8 @@ export class ProviderQuickPick {
 
   async showModelPicker(): Promise<void> {
     const currentID = this.registry.getProviderID();
-    const meta      = PROVIDER_CATALOGUE.find(p => p.id === currentID);
+    const catalogue = this.registry.getCatalogue();
+    const meta      = catalogue.find(p => p.id === currentID);
 
     if (!meta) { return; }
 
@@ -129,7 +130,8 @@ export class ProviderQuickPick {
   // ── Setup wizard for new providers ───────────
 
   async showSetupWizard(id: ProviderID): Promise<void> {
-    const meta = PROVIDER_CATALOGUE.find(p => p.id === id);
+    const catalogue = this.registry.getCatalogue();
+    const meta = catalogue.find(p => p.id === id);
     if (!meta) { return; }
 
     const steps: Array<() => Promise<boolean>> = [];
